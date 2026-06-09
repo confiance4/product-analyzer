@@ -1,7 +1,7 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "react",
+  "framework": "vite",
   "env": {
     "REACT_APP_SUPABASE_URL": "@supabase_url",
     "REACT_APP_SUPABASE_ANON_KEY": "@supabase_anon_key"
