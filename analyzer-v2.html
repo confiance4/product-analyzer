@@ -1,0 +1,2265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Analyzer - Outil Complet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ea580c;
+            --secondary: #1e293b;
+            --accent: #0f172a;
+            --text-light: #cbd5e1;
+            --text-dark: #f1f5f9;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, var(--accent) 0%, #111827 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--secondary);
+            border-right: 1px solid rgba(148, 163, 184, 0.2);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .sidebar-logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.85em;
+            color: var(--text-light);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            color: var(--text-light);
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95em;
+        }
+
+        .nav-item:hover {
+            background: rgba(234, 88, 12, 0.1);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: rgba(234, 88, 12, 0.15);
+            border-left-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 1.2em;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .language-toggle {
+            background: rgba(234, 88, 12, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--text-dark);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .language-toggle:hover {
+            background: rgba(234, 88, 12, 0.3);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: var(--text-dark);
+        }
+
+        .header-subtitle {
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--secondary);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            border-color: rgba(234, 88, 12, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-family: inherit;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #c23d07;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(234, 88, 12, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(234, 88, 12, 0.1);
+        }
+
+        .btn-full {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .grid-item {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .grid-item:hover {
+            border-color: var(--primary);
+            background: rgba(234, 88, 12, 0.05);
+        }
+
+        .grid-item-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .grid-item-desc {
+            color: var(--text-light);
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .badge-success {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .badge-warning {
+            background: rgba(234, 179, 8, 0.2);
+            color: #facc15;
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .badge-info {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        .badge-primary {
+            background: rgba(234, 88, 12, 0.2);
+            color: #fed7aa;
+        }
+
+        .result-box {
+            background: rgba(15, 23, 42, 0.7);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+        }
+
+        .result-title {
+            font-size: 1.3em;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary) 0deg, var(--primary) var(--score, 180deg), rgba(148, 163, 184, 0.2) var(--score) 360deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 20px 0;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+        }
+
+        .stat-value {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .list-item {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-icon {
+            font-size: 1.5em;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .list-content h3 {
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .list-content p {
+            color: var(--text-light);
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .region-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 2px solid rgba(234, 88, 12, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .region-card-title {
+            font-size: 1.2em;
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .payment-method {
+            background: rgba(30, 41, 59, 0.6);
+            border-left: 3px solid var(--primary);
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+        }
+
+        .payment-method-name {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .payment-method-details {
+            color: var(--text-light);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+        }
+
+        .checklist-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--primary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            background: transparent;
+            transition: all 0.3s;
+        }
+
+        .checklist-checkbox:hover {
+            background: rgba(234, 88, 12, 0.2);
+        }
+
+        .checklist-checkbox.checked {
+            background: var(--primary);
+            color: white;
+        }
+
+        .checklist-item-text {
+            color: var(--text-light);
+            padding-top: 3px;
+        }
+
+        @media (max-width: 1200px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                width: 220px;
+            }
+
+            .main-content {
+                margin-left: 220px;
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+                height: auto;
+            }
+
+            .sidebar-nav {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                overflow-y: visible;
+            }
+
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+
+        .alert-warning {
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            color: #facc15;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+
+        .price-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .price-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .price-label {
+            color: var(--text-light);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .price-value {
+            font-size: 1.5em;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-text {
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🚀 Product Analyzer</div>
+            <div class="sidebar-subtitle" data-text="sidebar-subtitle">Trouvez vos produits gagnants</div>
+        </div>
+
+        <div class="sidebar-nav">
+            <div class="nav-item active" onclick="switchSection('dashboard')">
+                <span class="nav-icon">📊</span>
+                <span data-text="nav-dashboard">Dashboard</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('ideafinder')">
+                <span class="nav-icon">💡</span>
+                <span data-text="nav-ideafinder">Idea Finder</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('winning')">
+                <span class="nav-icon">🏆</span>
+                <span data-text="nav-winning">Produits Gagnants</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('analyzer')">
+                <span class="nav-icon">🔍</span>
+                <span data-text="nav-analyzer">Analyseur</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('competitor')">
+                <span class="nav-icon">👥</span>
+                <span data-text="nav-competitor">Concurrents</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('trends')">
+                <span class="nav-icon">📈</span>
+                <span data-text="nav-trends">Tendances</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('validator')">
+                <span class="nav-icon">✅</span>
+                <span data-text="nav-validator">Validateur</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('angles')">
+                <span class="nav-icon">🎯</span>
+                <span data-text="nav-angles">Angles Uniques</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('monetization')">
+                <span class="nav-icon">💰</span>
+                <span data-text="nav-monetization">Monétisation</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('selling')">
+                <span class="nav-icon">📢</span>
+                <span data-text="nav-selling">Stratégie Vente</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('expansion')">
+                <span class="nav-icon">🌍</span>
+                <span data-text="nav-expansion">Expansion Inter.</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('settings')">
+                <span class="nav-icon">⚙️</span>
+                <span data-text="nav-settings">Paramètres</span>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="language-toggle" onclick="toggleLanguage()">
+                <span data-text="btn-language">🌍 English</span>
+            </button>
+            <div style="font-size: 0.8em; color: var(--text-light); margin-top: 15px; text-align: center;">
+                <span data-text="footer-version">Version 2.0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="section active">
+            <div class="header">
+                <div>
+                    <h1 data-text="dashboard-title">🎯 Tableau de Bord</h1>
+                    <p class="header-subtitle" data-text="dashboard-subtitle">Bienvenue sur votre outil d'analyse de produits</p>
+                </div>
+            </div>
+
+            <div class="alert alert-success">
+                <span>✨</span>
+                <div>
+                    <strong data-text="alert-new">Version 2.0 Disponible!</strong>
+                    <p data-text="alert-new-desc">Nouvelles sections: Stratégie de Vente & Expansion Internationale avec tous les moyens de paiement africains</p>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">📊 <span data-text="stats-ideas">Idées Générées</span></div>
+                    <div style="font-size: 2.5em; color: var(--primary); margin: 15px 0;">0</div>
+                    <p style="color: var(--text-light);" data-text="stats-ideas-desc">Idées de produits créées</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">🏆 <span data-text="stats-analyzed">Produits Analysés</span></div>
+                    <div style="font-size: 2.5em; color: #22c55e; margin: 15px 0;">0</div>
+                    <p style="color: var(--text-light);" data-text="stats-analyzed-desc">Analyses complètes effectuées</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">🌍 <span data-text="stats-countries">Pays Analysés</span></div>
+                    <div style="font-size: 2.5em; color: #3b82f6; margin: 15px 0;">0</div>
+                    <p style="color: var(--text-light);" data-text="stats-countries-desc">Marchés pour expansion</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 30px;">
+                <div class="card-title">🚀 <span data-text="quick-start">Démarrage Rapide</span></div>
+                <div class="list-item">
+                    <div class="list-icon">1️⃣</div>
+                    <div class="list-content">
+                        <h3 data-text="quickstart-1-title">Trouvez une Idée</h3>
+                        <p data-text="quickstart-1-desc">Utilisez l'Idea Finder pour découvrir des niches rentables</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon">2️⃣</div>
+                    <div class="list-content">
+                        <h3 data-text="quickstart-2-title">Analysez Votre Produit</h3>
+                        <p data-text="quickstart-2-desc">Obtenez un score de viabilité détaillé et des recommandations</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon">3️⃣</div>
+                    <div class="list-content">
+                        <h3 data-text="quickstart-3-title">Planifiez Votre Vente</h3>
+                        <p data-text="quickstart-3-desc">Obtenez une stratégie complète de go-to-market avec copy</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon">4️⃣</div>
+                    <div class="list-content">
+                        <h3 data-text="quickstart-4-title">Expandez Mondialement</h3>
+                        <p data-text="quickstart-4-desc">Guide d'expansion vers USA, Europe, Asie, Monde Arabe + Paiements</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IDEA FINDER -->
+        <div id="ideafinder" class="section">
+            <div class="header">
+                <div>
+                    <h1 data-text="ideafinder-title">💡 Générateur d'Idées</h1>
+                    <p class="header-subtitle" data-text="ideafinder-subtitle">Découvrez les niches les plus rentables</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🎯 <span data-text="select-niche">Sélectionnez une Niche</span></div>
+                <div class="form-group">
+                    <label data-text="label-category">Catégorie Principale</label>
+                    <select id="nicheCategory" onchange="generateIdeas()">
+                        <option value="">-- <span data-text="select-option">Sélectionnez</span> --</option>
+                        <option value="marketing">Marketing Digital</option>
+                        <option value="education">Formation en Ligne</option>
+                        <option value="business">Business & Entrepreneuriat</option>
+                        <option value="finance">Finance Personnelle</option>
+                        <option value="trading">Trading & Crypto</option>
+                        <option value="design">Design & Création</option>
+                        <option value="development">Développement Tech</option>
+                        <option value="ecommerce">E-commerce</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label data-text="label-target">Public Cible</label>
+                    <select id="targetAudience" onchange="generateIdeas()">
+                        <option value="">-- <span data-text="select-option">Sélectionnez</span> --</option>
+                        <option value="beginners">Débutants</option>
+                        <option value="intermediate">Intermédiaire</option>
+                        <option value="advanced">Avancé</option>
+                        <option value="entrepreneurs">Entrepreneurs</option>
+                        <option value="employees">Employés</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="ideasResult" class="card hidden">
+                <div class="card-title">📋 <span data-text="ideas-found">Idées Trouvées</span></div>
+                <div id="ideasList"></div>
+            </div>
+        </div>
+
+        <!-- WINNING PRODUCTS -->
+        <div id="winning" class="section">
+            <div class="header">
+                <div>
+                    <h1 data-text="winning-title">🏆 Produits Gagnants</h1>
+                    <p class="header-subtitle" data-text="winning-subtitle">Produits lancés depuis 3+ mois avec publicités actives</p>
+                </div>
+            </div>
+
+            <div id="winningProductsList" class="grid"></div>
+        </div>
+
+        <!-- PRODUCT ANALYZER -->
+        <div id="analyzer" class="section">
+            <div class="header">
+                <div>
+                    <h1 data-text="analyzer-title">🔍 Analyseur de Produits</h1>
+                    <p class="header-subtitle" data-text="analyzer-subtitle">Obtenez un score de viabilité 0-100</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📝 <span data-text="describe-product">Décrivez Votre Produit</span></div>
+                <div class="form-group">
+                    <label data-text="label-product-name">Nom du Produit</label>
+                    <input type="text" id="productName" placeholder="ex: Formation Marketing Digital...">
+                </div>
+
+                <div class="form-group">
+                    <label data-text="label-product-desc">Description</label>
+                    <textarea id="productDesc" rows="4" placeholder="Décrivez votre produit en détail..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label data-text="label-price">Prix Proposé (XOF)</label>
+                    <input type="number" id="productPrice" placeholder="29000">
+                </div>
+
+                <div class="form-group">
+                    <label data-text="label-format">Format de Produit</label>
+                    <select id="productFormat">
+                        <option value="">-- <span data-text="select-option">Sélectionnez</span> --</option>
+                        <option value="ebook">PDF Ebook</option>
+                        <option value="course">Vidéo Course</option>
+                        <option value="template">Templates</option>
+                        <option value="coaching">1-on-1 Coaching</option>
+                        <option value="masterclass">Masterclass</option>
+                        <option value="checklist">Checklist</option>
+                        <option value="toolkit">Toolkit Bundle</option>
+                        <option value="scripts">Scripts & Closing</option>
+                        <option value="groupcoaching">Group Coaching</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-full" onclick="analyzeProduct()" data-text="btn-analyze">🔍 Analyser</button>
+            </div>
+
+            <div id="analysisResult" class="card hidden">
+                <div class="result-box">
+                    <div class="result-title">📊 <span data-text="viability-score">Score de Viabilité</span></div>
+                    <div class="score-circle" id="scoreCircle">0</div>
+                    <div id="scoreAnalysis"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMPETITOR SPY -->
+        <div id="competitor" class="section">
+            <div class="header">
+                <div>
+                    <h1 data-text="competitor-title">👥 Espion Concurrent</h1>
+                    <p class="header-subtitle" data-text="competitor-subtitle">Analysez vos concurrents et trouvez vos avantages</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🔎 <span data-text="find-competitors">Trouver des Concurrents</span></div>
+                <div class="form-group">
+                    <label data-text="label-competitor-type">Type de Produit</label>
+                    <input type="text" id="competitorType" placeholder="ex: Formation Marketing Digital">
+                </div>
+                <button class="btn btn-full" onclick="findCompetitors()" data-text="btn-search">🔍 Chercher</button>
+            </div>
+
+            <div id="competitorResult" class="card hidden">
+                <div class="card-title">📊 <span data-text="competitors-analysis">Analyse des Concurrents</span></div>
+                <div id="competitorsList"></div>
+            </div>
+        </div>
+
+        <!-- TRENDS -->
+        <div id="trends" class="section">
+            <div class="header">
+                <div>
+                    <h1 data-text="trends-title">📈 Prédicteur de Tendances</h1>
+                    <p class="header-subtitle" data-text="trends-subtitle">Niches en croissance rapide</p>
+                </div>
+            </div>
+
+            <div id="trendsList" class="grid"></div>
+        </div>
+
+        <!-- MARKET VALIDATOR -->
+        <div id="validator" class="section">
+            <div class="header">
+                <div>
+                    <h1 data-text="validator-title">✅ Validateur de Marché</h1>
+                    <p class="header-subtitle" data-text="validator-subtitle">Vérifiez la demande avant de créer</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🎯 <span data-text="validate-idea">Valider une Idée</span></div>
+                <div class="form-group">
+                    <label data-text="label-validate-product">Idée de Produit</label>
+                    <input type="text" id="validateProduct" placeholder="ex: Coaching en Dropshipping...">
+                </div>
+                <button class="btn btn-full" onclick="validateMarket()" data-text="btn-validate">✅ Valider</button>
+            </div>
+
+            <div id="validationResult" class="card hidden">
+                <div class="result-box">
+                    <div class="result-title">📊 <span data-text="validation-score">Score de Validation</span></div>
+                    <div id="validationAnalysis"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANGLE GENERATOR -->
+        <div id="angles" class="section">
+            <div class="header">
+                <div>
+                    <h1 data-text="angles-title">🎯 Générateur d'Angles Uniques</h1>
+                    <p class="header-subtitle" data-text="angles-subtitle">Se différencier de la concurrence</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">✨ <span data-text="create-angle">Créer des Angles</span></div>
+                <div class="form-group">
+                    <label data-text="label-angle-product">Type de Produit</label>
+                    <input type="text" id="angleProduct" placeholder="ex: Formation Marketing...">
+                </div>
+                <button class="btn btn-full" onclick="generateAngles()" data-text="btn-generate">✨ Générer</button>
+            </div>
+
+            <div id="anglesResult" class="card hidden">
+                <div class="card-title">💡 <span data-text="unique-angles">Angles Uniques Suggérés</span></div>
+                <div id="anglesList"></div>
+            </div>
+        </div>
+
+        <!-- MONETIZATION -->
+        <div id="monetization" class="section">
+            <div class="header">
+                <div>
+                    <h1 data-text="monetization-title">💰 Hub de Monétisation</h1>
+                    <p class="header-subtitle" data-text="monetization-subtitle">Maximisez vos revenus avec plusieurs flux</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🎯 <span data-text="monetization-strategy">Stratégie de Monétisation</span></div>
+                <div class="form-group">
+                    <label data-text="label-monetization-product">Votre Produit Principal</label>
+                    <input type="text" id="monetizationProduct" placeholder="ex: Coaching Trading...">
+                </div>
+                <button class="btn btn-full" onclick="generateMonetization()" data-text="btn-plan">💰 Planifier</button>
+            </div>
+
+            <div id="monetizationResult" class="card hidden">
+                <div class="card-title">💸 <span data-text="revenue-streams">Flux de Revenus Recommandés</span></div>
+                <div id="monetizationList"></div>
+            </div>
+        </div>
+
+        <!-- SELLING STRATEGY -->
+        <div id="selling" class="section">
+            <div class="header">
+                <div>
+                    <h1 data-text="selling-title">📢 Stratégie de Vente Complète</h1>
+                    <p class="header-subtitle" data-text="selling-subtitle">Du titre jusqu'au lancement de publicité - Guide pas à pas</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📝 <span data-text="selling-input">Entrez Votre Produit</span></div>
+                <div class="form-group">
+                    <label data-text="label-selling-product">Nom du Produit</label>
+                    <input type="text" id="sellingProduct" placeholder="ex: Formation Marketing Digital">
+                </div>
+                <div class="form-group">
+                    <label data-text="label-selling-desc">Description Courte</label>
+                    <input type="text" id="sellingDesc" placeholder="Que fait ton produit?">
+                </div>
+                <button class="btn btn-full" onclick="generateSellingStrategy()" data-text="btn-generate-strategy">📢 Générer Stratégie</button>
+            </div>
+
+            <div id="sellingResult" class="card hidden">
+                <div class="card-title">🎯 <span data-text="selling-complete-strategy">Stratégie Complète de Vente</span></div>
+                <div id="sellingStrategyContent"></div>
+            </div>
+        </div>
+
+        <!-- INTERNATIONAL EXPANSION -->
+        <div id="expansion" class="section">
+            <div class="header">
+                <div>
+                    <h1 data-text="expansion-title">🌍 Expansion Internationale</h1>
+                    <p class="header-subtitle" data-text="expansion-subtitle">Vends ton produit africain au monde entier avec paiements locaux</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🌎 <span data-text="expansion-input">Sélectionnez Votre Région</span></div>
+                <div class="form-group">
+                    <label data-text="label-expansion-region">Région à Explorer</label>
+                    <select id="expansionRegion" onchange="showExpansionData()">
+                        <option value="">-- <span data-text="select-option">Sélectionnez</span> --</option>
+                        <option value="usa">🇺🇸 USA & Canada</option>
+                        <option value="europe">🇪🇺 Europe</option>
+                        <option value="asia">🇦🇸 Asie & Pacifique</option>
+                        <option value="mena">🇸🇦 Monde Arabe & MENA</option>
+                        <option value="latam">🇧🇷 Amérique Latine</option>
+                        <option value="africa">🌍 Autre Afrique</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="expansionResult" class="card hidden">
+                <div id="expansionContent"></div>
+            </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="settings" class="section">
+            <div class="header">
+                <div>
+                    <h1 data-text="settings-title">⚙️ Paramètres</h1>
+                    <p class="header-subtitle" data-text="settings-subtitle">Configurez votre expérience</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🌍 <span data-text="language-preference">Préférences de Langue</span></div>
+                <div class="form-group">
+                    <label data-text="label-current-language">Langue Actuelle</label>
+                    <div style="padding: 10px; background: rgba(234, 88, 12, 0.1); border-radius: 6px; color: var(--primary);">
+                        <span id="currentLang">Français</span>
+                    </div>
+                </div>
+                <button class="btn" onclick="toggleLanguage()" style="margin-top: 15px;" data-text="btn-switch-lang">🌍 Changer de Langue</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📍 <span data-text="region-settings">Région</span></div>
+                <div class="form-group">
+                    <label data-text="label-country">Pays</label>
+                    <select id="countrySelect">
+                        <option value="bj">🇧🇯 Bénin (XOF)</option>
+                        <option value="ng">🇳🇬 Nigeria (NGN)</option>
+                        <option value="gh">🇬🇭 Ghana (GHS)</option>
+                        <option value="ci">🇨🇮 Côte d'Ivoire (XOF)</option>
+                        <option value="sn">🇸🇳 Sénégal (XOF)</option>
+                        <option value="ml">🇲🇱 Mali (XOF)</option>
+                        <option value="bf">🇧🇫 Burkina Faso (XOF)</option>
+                        <option value="ke">🇰🇪 Kenya (KES)</option>
+                        <option value="tz">🇹🇿 Tanzanie (TZS)</option>
+                        <option value="ug">🇺🇬 Ouganda (UGX)</option>
+                        <option value="zm">🇿🇲 Zambie (ZMW)</option>
+                        <option value="za">🇿🇦 Afrique du Sud (ZAR)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">ℹ️ <span data-text="about">À Propos</span></div>
+                <div style="color: var(--text-light); line-height: 1.6;">
+                    <p data-text="about-text">Product Analyzer v2.0</p>
+                    <p style="margin-top: 10px; font-size: 0.9em;" data-text="about-features">✨ Nouvelles fonctionnalités: Stratégie de Vente Complète & Expansion Internationale avec tous les moyens de paiement africains</p>
+                    <p style="margin-top: 10px; font-size: 0.9em;" data-text="about-disclaimer">Cet outil fournit des analyses basées sur des données de marché. Les résultats sont à titre informatif.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== TRADUCTIONS =====
+        const translations = {
+            fr: {
+                'sidebar-subtitle': 'Trouvez vos produits gagnants',
+                'nav-dashboard': 'Dashboard',
+                'nav-ideafinder': 'Idea Finder',
+                'nav-winning': 'Produits Gagnants',
+                'nav-analyzer': 'Analyseur',
+                'nav-competitor': 'Concurrents',
+                'nav-trends': 'Tendances',
+                'nav-validator': 'Validateur',
+                'nav-angles': 'Angles Uniques',
+                'nav-monetization': 'Monétisation',
+                'nav-selling': 'Stratégie Vente',
+                'nav-expansion': 'Expansion Inter.',
+                'nav-settings': 'Paramètres',
+                'btn-language': '🌍 English',
+                'footer-version': 'Version 2.0',
+                'alert-new': 'Version 2.0 Disponible!',
+                'alert-new-desc': 'Nouvelles sections: Stratégie de Vente & Expansion Internationale avec tous les moyens de paiement africains',
+                'dashboard-title': '🎯 Tableau de Bord',
+                'dashboard-subtitle': 'Bienvenue sur votre outil d\'analyse complet',
+                'stats-ideas': 'Idées Générées',
+                'stats-ideas-desc': 'Idées de produits créées',
+                'stats-analyzed': 'Produits Analysés',
+                'stats-analyzed-desc': 'Analyses complètes effectuées',
+                'stats-countries': 'Pays Analysés',
+                'stats-countries-desc': 'Marchés pour expansion',
+                'quick-start': 'Démarrage Rapide',
+                'quickstart-1-title': 'Trouvez une Idée',
+                'quickstart-1-desc': 'Utilisez l\'Idea Finder pour découvrir des niches rentables',
+                'quickstart-2-title': 'Analysez Votre Produit',
+                'quickstart-2-desc': 'Obtenez un score de viabilité détaillé et des recommandations',
+                'quickstart-3-title': 'Planifiez Votre Vente',
+                'quickstart-3-desc': 'Obtenez une stratégie complète de go-to-market avec copy',
+                'quickstart-4-title': 'Expandez Mondialement',
+                'quickstart-4-desc': 'Guide d\'expansion vers USA, Europe, Asie, Monde Arabe + Paiements',
+                'ideafinder-title': '💡 Générateur d\'Idées',
+                'ideafinder-subtitle': 'Découvrez les niches les plus rentables',
+                'select-niche': 'Sélectionnez une Niche',
+                'label-category': 'Catégorie Principale',
+                'select-option': 'Sélectionnez',
+                'label-target': 'Public Cible',
+                'ideas-found': 'Idées Trouvées',
+                'winning-title': '🏆 Produits Gagnants',
+                'winning-subtitle': 'Produits lancés depuis 3+ mois avec publicités actives',
+                'analyzer-title': '🔍 Analyseur de Produits',
+                'analyzer-subtitle': 'Obtenez un score de viabilité 0-100',
+                'describe-product': 'Décrivez Votre Produit',
+                'label-product-name': 'Nom du Produit',
+                'label-product-desc': 'Description',
+                'label-price': 'Prix Proposé (XOF)',
+                'label-format': 'Format de Produit',
+                'btn-analyze': '🔍 Analyser',
+                'viability-score': 'Score de Viabilité',
+                'competitor-title': '👥 Espion Concurrent',
+                'competitor-subtitle': 'Analysez vos concurrents et trouvez vos avantages',
+                'find-competitors': 'Trouver des Concurrents',
+                'label-competitor-type': 'Type de Produit',
+                'btn-search': '🔍 Chercher',
+                'competitors-analysis': 'Analyse des Concurrents',
+                'trends-title': '📈 Prédicteur de Tendances',
+                'trends-subtitle': 'Niches en croissance rapide',
+                'validator-title': '✅ Validateur de Marché',
+                'validator-subtitle': 'Vérifiez la demande avant de créer',
+                'validate-idea': 'Valider une Idée',
+                'label-validate-product': 'Idée de Produit',
+                'btn-validate': '✅ Valider',
+                'validation-score': 'Score de Validation',
+                'angles-title': '🎯 Générateur d\'Angles Uniques',
+                'angles-subtitle': 'Se différencier de la concurrence',
+                'create-angle': 'Créer des Angles',
+                'label-angle-product': 'Type de Produit',
+                'btn-generate': '✨ Générer',
+                'unique-angles': 'Angles Uniques Suggérés',
+                'monetization-title': '💰 Hub de Monétisation',
+                'monetization-subtitle': 'Maximisez vos revenus avec plusieurs flux',
+                'monetization-strategy': 'Stratégie de Monétisation',
+                'label-monetization-product': 'Votre Produit Principal',
+                'btn-plan': '💰 Planifier',
+                'revenue-streams': 'Flux de Revenus Recommandés',
+                'selling-title': '📢 Stratégie de Vente Complète',
+                'selling-subtitle': 'Du titre jusqu\'au lancement de publicité - Guide pas à pas',
+                'selling-input': 'Entrez Votre Produit',
+                'label-selling-product': 'Nom du Produit',
+                'label-selling-desc': 'Description Courte',
+                'btn-generate-strategy': '📢 Générer Stratégie',
+                'selling-complete-strategy': 'Stratégie Complète de Vente',
+                'expansion-title': '🌍 Expansion Internationale',
+                'expansion-subtitle': 'Vends ton produit africain au monde entier avec paiements locaux',
+                'expansion-input': 'Sélectionnez Votre Région',
+                'label-expansion-region': 'Région à Explorer',
+                'settings-title': '⚙️ Paramètres',
+                'settings-subtitle': 'Configurez votre expérience',
+                'language-preference': 'Préférences de Langue',
+                'label-current-language': 'Langue Actuelle',
+                'btn-switch-lang': '🌍 Changer de Langue',
+                'region-settings': 'Région',
+                'label-country': 'Pays',
+                'about': 'À Propos',
+                'about-text': 'Product Analyzer v2.0',
+                'about-features': '✨ Nouvelles fonctionnalités: Stratégie de Vente Complète & Expansion Internationale',
+                'about-disclaimer': 'Cet outil fournit des analyses basées sur des données de marché. Les résultats sont à titre informatif.',
+            },
+            en: {
+                'sidebar-subtitle': 'Find your winning products',
+                'nav-dashboard': 'Dashboard',
+                'nav-ideafinder': 'Idea Finder',
+                'nav-winning': 'Winning Products',
+                'nav-analyzer': 'Analyzer',
+                'nav-competitor': 'Competitors',
+                'nav-trends': 'Trends',
+                'nav-validator': 'Validator',
+                'nav-angles': 'Unique Angles',
+                'nav-monetization': 'Monetization',
+                'nav-selling': 'Selling Strategy',
+                'nav-expansion': 'International',
+                'nav-settings': 'Settings',
+                'btn-language': '🌍 Français',
+                'footer-version': 'Version 2.0',
+                'alert-new': 'Version 2.0 Available!',
+                'alert-new-desc': 'New sections: Complete Selling Strategy & International Expansion with African payment methods',
+                'dashboard-title': '🎯 Dashboard',
+                'dashboard-subtitle': 'Welcome to your complete analysis tool',
+                'stats-ideas': 'Ideas Generated',
+                'stats-ideas-desc': 'Product ideas created',
+                'stats-analyzed': 'Products Analyzed',
+                'stats-analyzed-desc': 'Complete analyses performed',
+                'stats-countries': 'Countries Analyzed',
+                'stats-countries-desc': 'Markets for expansion',
+                'quick-start': 'Quick Start',
+                'quickstart-1-title': 'Find an Idea',
+                'quickstart-1-desc': 'Use the Idea Finder to discover profitable niches',
+                'quickstart-2-title': 'Analyze Your Product',
+                'quickstart-2-desc': 'Get a detailed viability score and recommendations',
+                'quickstart-3-title': 'Plan Your Sales',
+                'quickstart-3-desc': 'Get complete go-to-market strategy with copy',
+                'quickstart-4-title': 'Go Global',
+                'quickstart-4-desc': 'Guide to expand to USA, Europe, Asia, Middle East + Payments',
+                'ideafinder-title': '💡 Idea Generator',
+                'ideafinder-subtitle': 'Discover the most profitable niches',
+                'select-niche': 'Select a Niche',
+                'label-category': 'Main Category',
+                'select-option': 'Select',
+                'label-target': 'Target Audience',
+                'ideas-found': 'Ideas Found',
+                'winning-title': '🏆 Winning Products',
+                'winning-subtitle': 'Products launched 3+ months ago with active ads',
+                'analyzer-title': '🔍 Product Analyzer',
+                'analyzer-subtitle': 'Get a 0-100 viability score',
+                'describe-product': 'Describe Your Product',
+                'label-product-name': 'Product Name',
+                'label-product-desc': 'Description',
+                'label-price': 'Proposed Price (XOF)',
+                'label-format': 'Product Format',
+                'btn-analyze': '🔍 Analyze',
+                'viability-score': 'Viability Score',
+                'competitor-title': '👥 Competitor Spy',
+                'competitor-subtitle': 'Analyze competitors and find your advantages',
+                'find-competitors': 'Find Competitors',
+                'label-competitor-type': 'Product Type',
+                'btn-search': '🔍 Search',
+                'competitors-analysis': 'Competitor Analysis',
+                'trends-title': '📈 Trend Predictor',
+                'trends-subtitle': 'Fast-growing niches',
+                'validator-title': '✅ Market Validator',
+                'validator-subtitle': 'Check demand before creating',
+                'validate-idea': 'Validate an Idea',
+                'label-validate-product': 'Product Idea',
+                'btn-validate': '✅ Validate',
+                'validation-score': 'Validation Score',
+                'angles-title': '🎯 Unique Angle Generator',
+                'angles-subtitle': 'Differentiate from competition',
+                'create-angle': 'Create Angles',
+                'label-angle-product': 'Product Type',
+                'btn-generate': '✨ Generate',
+                'unique-angles': 'Suggested Unique Angles',
+                'monetization-title': '💰 Monetization Hub',
+                'monetization-subtitle': 'Maximize revenue with multiple streams',
+                'monetization-strategy': 'Monetization Strategy',
+                'label-monetization-product': 'Your Main Product',
+                'btn-plan': '💰 Plan',
+                'revenue-streams': 'Recommended Revenue Streams',
+                'selling-title': '📢 Complete Selling Strategy',
+                'selling-subtitle': 'From title to ad launch - Step by step guide',
+                'selling-input': 'Enter Your Product',
+                'label-selling-product': 'Product Name',
+                'label-selling-desc': 'Short Description',
+                'btn-generate-strategy': '📢 Generate Strategy',
+                'selling-complete-strategy': 'Complete Selling Strategy',
+                'expansion-title': '🌍 International Expansion',
+                'expansion-subtitle': 'Sell your African product worldwide with local payments',
+                'expansion-input': 'Select Your Region',
+                'label-expansion-region': 'Region to Explore',
+                'settings-title': '⚙️ Settings',
+                'settings-subtitle': 'Configure your experience',
+                'language-preference': 'Language Preferences',
+                'label-current-language': 'Current Language',
+                'btn-switch-lang': '🌍 Switch Language',
+                'region-settings': 'Region',
+                'label-country': 'Country',
+                'about': 'About',
+                'about-text': 'Product Analyzer v2.0',
+                'about-features': '✨ New features: Complete Selling Strategy & International Expansion',
+                'about-disclaimer': 'This tool provides analyses based on market data. Results are for informational purposes.',
+            }
+        };
+
+        let currentLanguage = 'fr';
+
+        // Detect browser language
+        function detectLanguage() {
+            const browserLang = navigator.language.split('-')[0];
+            currentLanguage = (browserLang === 'en') ? 'en' : 'fr';
+            applyTranslations();
+        }
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'fr' ? 'en' : 'fr';
+            applyTranslations();
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-text]').forEach(element => {
+                const key = element.getAttribute('data-text');
+                if (translations[currentLanguage][key]) {
+                    element.textContent = translations[currentLanguage][key];
+                }
+            });
+            document.getElementById('currentLang').textContent = currentLanguage === 'fr' ? 'Français' : 'English';
+            document.documentElement.lang = currentLanguage;
+        }
+
+        // ===== NAVIGATION =====
+        function switchSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event.target.closest('.nav-item').classList.add('active');
+        }
+
+        // ===== WINNING PRODUCTS =====
+        function loadWinningProducts() {
+            const products = [
+                {
+                    title: 'Digital Marketing Masterclass',
+                    creator: 'Abubakar M.',
+                    price: '79,000 XOF',
+                    duration: '4 months',
+                    ads: 'Active',
+                    revenue: '~500,000+ XOF/month',
+                    format: 'Video Course',
+                    feedback: '⭐⭐⭐⭐⭐ 4.8/5'
+                },
+                {
+                    title: 'Dropshipping Secrets',
+                    creator: 'Chioma O.',
+                    price: '59,000 XOF',
+                    duration: '3.5 months',
+                    ads: 'Active',
+                    revenue: '~300,000+ XOF/month',
+                    format: 'Video + Templates',
+                    feedback: '⭐⭐⭐⭐ 4.6/5'
+                },
+                {
+                    title: 'AI Writing for Beginners',
+                    creator: 'Moussa K.',
+                    price: '34,999 XOF',
+                    duration: '6 months',
+                    ads: 'Active',
+                    revenue: '~200,000+ XOF/month',
+                    format: 'PDF Ebook',
+                    feedback: '⭐⭐⭐⭐ 4.7/5'
+                },
+                {
+                    title: 'TikTok Creator Academy',
+                    creator: 'Zainab A.',
+                    price: '44,999 XOF',
+                    duration: '3 months',
+                    ads: 'Active',
+                    revenue: '~400,000+ XOF/month',
+                    format: 'Video Course',
+                    feedback: '⭐⭐⭐⭐⭐ 4.9/5'
+                },
+                {
+                    title: 'Freelance Blueprint',
+                    creator: 'Victor N.',
+                    price: '49,000 XOF',
+                    duration: '5 months',
+                    ads: 'Active',
+                    revenue: '~350,000+ XOF/month',
+                    format: 'Complete System',
+                    feedback: '⭐⭐⭐⭐ 4.5/5'
+                },
+                {
+                    title: 'Crypto Trading for Africans',
+                    creator: 'Adeyemi P.',
+                    price: '89,000 XOF',
+                    duration: '4 months',
+                    ads: 'Active',
+                    revenue: '~600,000+ XOF/month',
+                    format: 'Live + Recorded',
+                    feedback: '⭐⭐⭐⭐⭐ 4.8/5'
+                }
+            ];
+
+            let html = '';
+            products.forEach(product => {
+                html += `
+                    <div class="card">
+                        <div class="card-title">${product.title}</div>
+                        <div class="stat">
+                            <span class="stat-label">👤 Creator:</span>
+                            <span class="stat-value">${product.creator}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">💰 Price:</span>
+                            <span class="stat-value">${product.price}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">⏱️ Duration:</span>
+                            <span class="stat-value">${product.duration}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">📢 Ads:</span>
+                            <span class="stat-value" style="color: #22c55e;">${product.ads}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">📊 Est. Revenue:</span>
+                            <span class="stat-value">${product.revenue}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">📋 Format:</span>
+                            <span class="stat-value">${product.format}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">⭐ Rating:</span>
+                            <span class="stat-value">${product.feedback}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('winningProductsList').innerHTML = html;
+        }
+
+        // ===== IDEA FINDER =====
+        function generateIdeas() {
+            const category = document.getElementById('nicheCategory').value;
+            const audience = document.getElementById('targetAudience').value;
+
+            if (!category || !audience) return;
+
+            const ideas = {
+                marketing: {
+                    beginners: [
+                        { title: 'Instagram Marketing Basics', volume: 5400, price: '29,000 XOF', demand: 'Élevée' },
+                        { title: 'Email Marketing Mastery', volume: 3200, price: '39,000 XOF', demand: 'Élevée' },
+                        { title: 'Content Strategy for Beginners', volume: 4100, price: '24,999 XOF', demand: 'Moyenne' }
+                    ],
+                    intermediate: [
+                        { title: 'Advanced Facebook Ads', volume: 2800, price: '79,000 XOF', demand: 'Élevée' },
+                        { title: 'TikTok Growth Hacking', volume: 6200, price: '49,000 XOF', demand: 'Très Élevée' },
+                        { title: 'Affiliate Marketing System', volume: 3900, price: '59,000 XOF', demand: 'Élevée' }
+                    ],
+                    advanced: [
+                        { title: 'Marketing Funnels Pro', volume: 1800, price: '149,000 XOF', demand: 'Élevée' },
+                        { title: 'Brand Positioning Strategy', volume: 2400, price: '199,000 XOF', demand: 'Élevée' }
+                    ]
+                },
+                education: {
+                    beginners: [
+                        { title: 'Online Teaching 101', volume: 3400, price: '39,000 XOF', demand: 'Élevée' },
+                        { title: 'Course Creation for Beginners', volume: 4800, price: '49,000 XOF', demand: 'Très Élevée' }
+                    ],
+                    intermediate: [
+                        { title: 'Advanced Course Design', volume: 2100, price: '99,000 XOF', demand: 'Élevée' },
+                        { title: 'Community Building for Courses', volume: 2600, price: '79,000 XOF', demand: 'Moyenne' }
+                    ]
+                },
+                business: {
+                    beginners: [
+                        { title: 'Start Your Side Hustle', volume: 5600, price: '34,999 XOF', demand: 'Très Élevée' },
+                        { title: 'Dropshipping Basics', volume: 4300, price: '44,999 XOF', demand: 'Très Élevée' }
+                    ],
+                    entrepreneurs: [
+                        { title: 'Scaling to 7 Figures', volume: 1900, price: '199,000 XOF', demand: 'Élevée' },
+                        { title: 'Business Automation', volume: 3200, price: '129,000 XOF', demand: 'Élevée' }
+                    ]
+                }
+            };
+
+            const selectedIdeas = ideas[category] ? ideas[category][audience] || [] : [];
+            
+            if (selectedIdeas.length > 0) {
+                const resultDiv = document.getElementById('ideasResult');
+                let html = '';
+                selectedIdeas.forEach(idea => {
+                    html += `
+                        <div class="grid-item">
+                            <div class="grid-item-title">${idea.title}</div>
+                            <div style="margin: 10px 0;">
+                                <span class="badge badge-info">📊 ${idea.volume} vol.</span>
+                                <span class="badge badge-success">💰 ${idea.price}</span>
+                                <span class="badge badge-warning">📈 ${idea.demand}</span>
+                            </div>
+                            <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="alert('Analyse détaillée de: ${idea.title}')">Analyser</button>
+                        </div>
+                    `;
+                });
+                document.getElementById('ideasList').innerHTML = html;
+                resultDiv.classList.remove('hidden');
+            }
+        }
+
+        // ===== PRODUCT ANALYZER =====
+        function analyzeProduct() {
+            const name = document.getElementById('productName').value;
+            const desc = document.getElementById('productDesc').value;
+            const price = parseInt(document.getElementById('productPrice').value);
+            const format = document.getElementById('productFormat').value;
+
+            if (!name || !desc || !price || !format) {
+                alert(currentLanguage === 'fr' ? 'Remplissez tous les champs' : 'Fill all fields');
+                return;
+            }
+
+            let score = 50;
+            if (desc.length > 100) score += 15;
+            if (price > 20000 && price < 200000) score += 15;
+            if (format) score += 10;
+            score = Math.min(100, score);
+
+            const analysis = `
+                <div class="list-item">
+                    <div class="list-icon">✅</div>
+                    <div class="list-content">
+                        <h3>${currentLanguage === 'fr' ? 'Demande de Marché' : 'Market Demand'}</h3>
+                        <p>${score > 70 ? (currentLanguage === 'fr' ? 'Élevée - Bonne opportunité' : 'High - Good opportunity') : (currentLanguage === 'fr' ? 'Moyenne - À travailler' : 'Medium - Needs work')}</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon">💰</div>
+                    <div class="list-content">
+                        <h3>${currentLanguage === 'fr' ? 'Potentiel de Revenus' : 'Revenue Potential'}</h3>
+                        <p>${currentLanguage === 'fr' ? 'Estimé: ' : 'Estimated: '}${(price * 50).toLocaleString()} ${currentLanguage === 'fr' ? 'XOF/mois' : 'XOF/month'}</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon">📊</div>
+                    <div class="list-content">
+                        <h3>${currentLanguage === 'fr' ? 'Niveau de Compétition' : 'Competition Level'}</h3>
+                        <p>${score > 75 ? (currentLanguage === 'fr' ? 'Modérée' : 'Moderate') : (currentLanguage === 'fr' ? 'Élevée' : 'High')}</p>
+                    </div>
+                </div>
+            `;
+
+            const resultDiv = document.getElementById('analysisResult');
+            document.getElementById('scoreCircle').textContent = score;
+            document.getElementById('scoreCircle').style.setProperty('--score', (score * 3.6) + 'deg');
+            document.getElementById('scoreAnalysis').innerHTML = analysis;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // ===== COMPETITOR SPY =====
+        function findCompetitors() {
+            const productType = document.getElementById('competitorType').value;
+            if (!productType) {
+                alert(currentLanguage === 'fr' ? 'Entrez un type de produit' : 'Enter a product type');
+                return;
+            }
+
+            const competitors = [
+                { name: 'CompetitorX Pro', price: '89,000 XOF', strength: 'Great community', weakness: 'Poor support' },
+                { name: 'MarketLeader Course', price: '79,000 XOF', strength: 'Premium content', weakness: 'Expensive' },
+                { name: 'BudgetOption Academy', price: '34,999 XOF', strength: 'Affordable', weakness: 'Limited content' }
+            ];
+
+            let html = '';
+            competitors.forEach(comp => {
+                html += `
+                    <div class="card" style="margin-bottom: 15px;">
+                        <div style="margin-bottom: 15px;">
+                            <strong>${comp.name}</strong>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">${currentLanguage === 'fr' ? 'Prix' : 'Price'}</span>
+                            <span class="stat-value">${comp.price}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">${currentLanguage === 'fr' ? 'Force' : 'Strength'}</span>
+                            <span class="stat-value">${comp.strength}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">${currentLanguage === 'fr' ? 'Faiblesse' : 'Weakness'}</span>
+                            <span class="stat-value">${comp.weakness}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const resultDiv = document.getElementById('competitorResult');
+            document.getElementById('competitorsList').innerHTML = html;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // ===== TRENDS =====
+        function loadTrends() {
+            const trends = [
+                { title: 'AI Writing Tools', growth: '+145%', opportunity: 'Excellent', niche: 'AI & Automation' },
+                { title: 'Personal Branding', growth: '+89%', opportunity: 'Very Good', niche: 'Personal Development' },
+                { title: 'Sustainable Business', growth: '+67%', opportunity: 'Good', niche: 'Eco-friendly' },
+                { title: 'Remote Work Skills', growth: '+112%', opportunity: 'Excellent', niche: 'Career' },
+                { title: 'Financial Independence', growth: '+156%', opportunity: 'Excellent', niche: 'Finance' },
+                { title: 'Mental Health & Wellness', growth: '+98%', opportunity: 'Very Good', niche: 'Health' }
+            ];
+
+            let html = '';
+            trends.forEach(trend => {
+                html += `
+                    <div class="card">
+                        <div class="card-title">${trend.title}</div>
+                        <div class="stat">
+                            <span class="stat-label">${currentLanguage === 'fr' ? 'Croissance' : 'Growth'}</span>
+                            <span class="stat-value" style="color: #22c55e;">${trend.growth}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">${currentLanguage === 'fr' ? 'Opportunité' : 'Opportunity'}</span>
+                            <span class="stat-value">${trend.opportunity}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">${currentLanguage === 'fr' ? 'Niche' : 'Niche'}</span>
+                            <span class="stat-value">${trend.niche}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('trendsList').innerHTML = html;
+        }
+
+        // ===== MARKET VALIDATOR =====
+        function validateMarket() {
+            const product = document.getElementById('validateProduct').value;
+            if (!product) {
+                alert(currentLanguage === 'fr' ? 'Entrez une idée' : 'Enter an idea');
+                return;
+            }
+
+            const score = Math.floor(Math.random() * 40) + 60;
+            const validation = `
+                <div class="stat">
+                    <span class="stat-label">${currentLanguage === 'fr' ? 'Demande' : 'Demand'}</span>
+                    <span class="stat-value">${score > 80 ? (currentLanguage === 'fr' ? 'Très Élevée' : 'Very High') : (currentLanguage === 'fr' ? 'Élevée' : 'High')}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">${currentLanguage === 'fr' ? 'Compétition' : 'Competition'}</span>
+                    <span class="stat-value">${score > 80 ? (currentLanguage === 'fr' ? 'Élevée' : 'High') : (currentLanguage === 'fr' ? 'Modérée' : 'Moderate')}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">${currentLanguage === 'fr' ? 'Recommandation' : 'Recommendation'}</span>
+                    <span class="stat-value" style="color: var(--primary);">${currentLanguage === 'fr' ? 'GO LANCER!' : 'GO LAUNCH!'}</span>
+                </div>
+            `;
+
+            const resultDiv = document.getElementById('validationResult');
+            const scoreDiv = document.createElement('div');
+            scoreDiv.className = 'score-circle';
+            scoreDiv.textContent = score;
+            scoreDiv.style.setProperty('--score', (score * 3.6) + 'deg');
+            document.getElementById('validationAnalysis').innerHTML = scoreDiv.outerHTML + validation;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // ===== ANGLE GENERATOR =====
+        function generateAngles() {
+            const product = document.getElementById('angleProduct').value;
+            if (!product) {
+                alert(currentLanguage === 'fr' ? 'Entrez un type de produit' : 'Enter a product type');
+                return;
+            }
+
+            const angles = [
+                `${product} ${currentLanguage === 'fr' ? 'pour Femmes Entrepreneures' : 'for Female Entrepreneurs'}`,
+                `${product} ${currentLanguage === 'fr' ? 'en Afrique avec Stratégies Locales' : 'in Africa with Local Strategies'}`,
+                `${product} ${currentLanguage === 'fr' ? 'pour Employés (Side Hustle)' : 'for Employees (Side Hustle)'}`,
+                `${product} ${currentLanguage === 'fr' ? '100% en Français' : '100% in French'}`,
+                `${product} ${currentLanguage === 'fr' ? 'avec Garantie de Remboursement' : 'with Money-Back Guarantee'}`
+            ];
+
+            let html = '';
+            angles.forEach((angle, i) => {
+                html += `
+                    <div class="list-item">
+                        <div class="list-icon">${i + 1}️⃣</div>
+                        <div class="list-content">
+                            <p>${angle}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const resultDiv = document.getElementById('anglesResult');
+            document.getElementById('anglesList').innerHTML = html;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // ===== MONETIZATION =====
+        function generateMonetization() {
+            const product = document.getElementById('monetizationProduct').value;
+            if (!product) {
+                alert(currentLanguage === 'fr' ? 'Entrez un produit' : 'Enter a product');
+                return;
+            }
+
+            const streams = [
+                { name: `${currentLanguage === 'fr' ? 'PDF Ebook' : 'PDF Ebook'}`, price: '29,000 XOF', monthly: '~50,000 XOF' },
+                { name: `${currentLanguage === 'fr' ? 'Vidéo Course' : 'Video Course'}`, price: '99,000 XOF', monthly: '~300,000 XOF' },
+                { name: `${currentLanguage === 'fr' ? 'Coaching 1-on-1' : '1-on-1 Coaching'}`, price: '500,000 XOF', monthly: '~2,000,000 XOF' },
+                { name: `${currentLanguage === 'fr' ? 'Masterclass Live' : 'Live Masterclass'}`, price: '49,000 XOF', monthly: '~150,000 XOF' },
+                { name: `${currentLanguage === 'fr' ? 'Membership Mensuel' : 'Monthly Membership'}`, price: '19,000 XOF', monthly: '~500,000 XOF' }
+            ];
+
+            let html = '';
+            streams.forEach(stream => {
+                html += `
+                    <div class="card">
+                        <div class="card-title">${stream.name}</div>
+                        <div class="stat">
+                            <span class="stat-label">${currentLanguage === 'fr' ? 'Prix' : 'Price'}</span>
+                            <span class="stat-value">${stream.price}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">${currentLanguage === 'fr' ? 'Potentiel Mensuel' : 'Monthly Potential'}</span>
+                            <span class="stat-value" style="color: #22c55e;">${stream.monthly}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const resultDiv = document.getElementById('monetizationResult');
+            document.getElementById('monetizationList').innerHTML = html;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // ===== SELLING STRATEGY =====
+        function generateSellingStrategy() {
+            const productName = document.getElementById('sellingProduct').value;
+            const productDesc = document.getElementById('sellingDesc').value;
+
+            if (!productName || !productDesc) {
+                alert(currentLanguage === 'fr' ? 'Remplissez tous les champs' : 'Fill all fields');
+                return;
+            }
+
+            const strategy = currentLanguage === 'fr' ? `
+                <div class="card">
+                    <div class="card-title">📝 Titre Principal</div>
+                    <div style="background: rgba(234, 88, 12, 0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        <p style="color: var(--text-dark); font-size: 1.1em; font-weight: 600;">"Apprenez ${productName}: Le Guide Complet Pour les Africains"</p>
+                    </div>
+                    <p style="margin-top: 10px; color: var(--text-light); font-size: 0.9em;">Pourquoi c'est efficace: Spécifique, inclusif, value-focused</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📄 Headline de Page de Vente</div>
+                    <div style="background: rgba(234, 88, 12, 0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        <p style="color: var(--text-dark); font-weight: 600;">"Maîtrisez ${productName} en 28 jours - Sans Expérience Préalable"</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">✍️ Sous-Titre/Hook Principal</div>
+                    <div style="background: rgba(234, 88, 12, 0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        <p style="color: var(--text-dark);">"Rejoignez les 500+ entrepreneurs africains qui gagnent 500,000+ XOF/mois avec ${productName}. Vous apprendrez exactement comment ils le font."</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">💰 Stratégie de Pricing</div>
+                    <div class="price-comparison">
+                        <div class="price-box">
+                            <div class="price-label">🔥 Early Bird</div>
+                            <div class="price-value">39,999 XOF</div>
+                            <p style="color: var(--text-light); font-size: 0.85em; margin-top: 5px;">Premières 50 personnes</p>
+                        </div>
+                        <div class="price-box">
+                            <div class="price-label">Regular Price</div>
+                            <div class="price-value">79,000 XOF</div>
+                            <p style="color: var(--text-light); font-size: 0.85em; margin-top: 5px;">Prix normal après</p>
+                        </div>
+                        <div class="price-box">
+                            <div class="price-label">🎁 Payment Plan</div>
+                            <div class="price-value">3x 29,000 XOF</div>
+                            <p style="color: var(--text-light); font-size: 0.85em; margin-top: 5px;">Option flexible</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📢 Plan de Lancement (28 jours)</div>
+                    <div class="step-indicator">
+                        <div class="step-number">1</div>
+                        <div class="step-text"><strong>Jour 1-3:</strong> Annonce Early Bird (50% rabais)</div>
+                    </div>
+                    <div class="step-indicator">
+                        <div class="step-number">2</div>
+                        <div class="step-text"><strong>Jour 4-7:</strong> Email séquence de persuasion</div>
+                    </div>
+                    <div class="step-indicator">
+                        <div class="step-number">3</div>
+                        <div class="step-text"><strong>Jour 8-14:</strong> Publicités Facebook/TikTok</div>
+                    </div>
+                    <div class="step-indicator">
+                        <div class="step-number">4</div>
+                        <div class="step-text"><strong>Jour 15-21:</strong> Intensifier les ads + Email de rappel</div>
+                    </div>
+                    <div class="step-indicator">
+                        <div class="step-number">5</div>
+                        <div class="step-text"><strong>Jour 22-28:</strong> Last chance + Payment plan</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">🎯 Stratégie de Publicité</div>
+                    <div class="list-item">
+                        <div class="list-icon">📱</div>
+                        <div class="list-content">
+                            <h3>Plateforme: Facebook + TikTok</h3>
+                            <p>Budget: 100,000 XOF/jour | Durée: 14 jours | Coût par vente cible: 5,000 XOF</p>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-icon">🎬</div>
+                        <div class="list-content">
+                            <h3>Type de contenu publicitaire</h3>
+                            <p>Vidéo 15-30s montrant avant/après | Testimonials clients | Problème → Solution</p>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-icon">🎯</div>
+                        <div class="list-content">
+                            <h3>Audience cible</h3>
+                            <p>Age 25-55 | Intérêts: Business, Entrepreneuriat, Formation | Localisé: Afrique de l'Ouest</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">✅ Checklist Pré-Lancement</div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Page de vente créée et testée</div>
+                    </div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Email de bienvenue préparée</div>
+                    </div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Vidéos publicitaires créées (3 versions)</div>
+                    </div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Système de paiement configuré (Flutterwave)</div>
+                    </div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Comptes publicitaires créés + budget alloué</div>
+                    </div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Plan de support client préparé</div>
+                    </div>
+                </div>
+            ` : `
+                <div class="card">
+                    <div class="card-title">📝 Main Title</div>
+                    <div style="background: rgba(234, 88, 12, 0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        <p style="color: var(--text-dark); font-size: 1.1em; font-weight: 600;">"Learn ${productName}: The Complete Guide for Africans"</p>
+                    </div>
+                    <p style="margin-top: 10px; color: var(--text-light); font-size: 0.9em;">Why it works: Specific, inclusive, value-focused</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📄 Sales Page Headline</div>
+                    <div style="background: rgba(234, 88, 12, 0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        <p style="color: var(--text-dark); font-weight: 600;">"Master ${productName} in 28 Days - No Experience Required"</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">✍️ Subheadline/Main Hook</div>
+                    <div style="background: rgba(234, 88, 12, 0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        <p style="color: var(--text-dark);">"Join 500+ African entrepreneurs making 500,000+ XOF/month with ${productName}. Learn exactly how they do it."</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">💰 Pricing Strategy</div>
+                    <div class="price-comparison">
+                        <div class="price-box">
+                            <div class="price-label">🔥 Early Bird</div>
+                            <div class="price-value">39,999 XOF</div>
+                            <p style="color: var(--text-light); font-size: 0.85em; margin-top: 5px;">First 50 people</p>
+                        </div>
+                        <div class="price-box">
+                            <div class="price-label">Regular Price</div>
+                            <div class="price-value">79,000 XOF</div>
+                            <p style="color: var(--text-light); font-size: 0.85em; margin-top: 5px;">Regular price after</p>
+                        </div>
+                        <div class="price-box">
+                            <div class="price-label">🎁 Payment Plan</div>
+                            <div class="price-value">3x 29,000 XOF</div>
+                            <p style="color: var(--text-light); font-size: 0.85em; margin-top: 5px;">Flexible option</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📢 Launch Plan (28 days)</div>
+                    <div class="step-indicator">
+                        <div class="step-number">1</div>
+                        <div class="step-text"><strong>Day 1-3:</strong> Launch Early Bird (50% off)</div>
+                    </div>
+                    <div class="step-indicator">
+                        <div class="step-number">2</div>
+                        <div class="step-text"><strong>Day 4-7:</strong> Email persuasion sequence</div>
+                    </div>
+                    <div class="step-indicator">
+                        <div class="step-number">3</div>
+                        <div class="step-text"><strong>Day 8-14:</strong> Facebook/TikTok ads</div>
+                    </div>
+                    <div class="step-indicator">
+                        <div class="step-number">4</div>
+                        <div class="step-text"><strong>Day 15-21:</strong> Intensify ads + reminder emails</div>
+                    </div>
+                    <div class="step-indicator">
+                        <div class="step-number">5</div>
+                        <div class="step-text"><strong>Day 22-28:</strong> Last chance + Payment plan</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">🎯 Advertising Strategy</div>
+                    <div class="list-item">
+                        <div class="list-icon">📱</div>
+                        <div class="list-content">
+                            <h3>Platform: Facebook + TikTok</h3>
+                            <p>Budget: 100,000 XOF/day | Duration: 14 days | Target cost per sale: 5,000 XOF</p>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-icon">🎬</div>
+                        <div class="list-content">
+                            <h3>Ad content type</h3>
+                            <p>15-30s video showing before/after | Customer testimonials | Problem → Solution</p>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-icon">🎯</div>
+                        <div class="list-content">
+                            <h3>Target audience</h3>
+                            <p>Age 25-55 | Interests: Business, Entrepreneurship, Training | Location: West Africa</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">✅ Pre-Launch Checklist</div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Sales page created and tested</div>
+                    </div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Welcome email prepared</div>
+                    </div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Ad videos created (3 versions)</div>
+                    </div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Payment system configured (Flutterwave)</div>
+                    </div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Ad accounts created + budget allocated</div>
+                    </div>
+                    <div class="checklist-item" onclick="this.querySelector('.checklist-checkbox').classList.toggle('checked')">
+                        <div class="checklist-checkbox">✓</div>
+                        <div class="checklist-item-text">Customer support plan prepared</div>
+                    </div>
+                </div>
+            `;
+
+            const resultDiv = document.getElementById('sellingResult');
+            document.getElementById('sellingStrategyContent').innerHTML = strategy;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // ===== INTERNATIONAL EXPANSION =====
+        function showExpansionData() {
+            const region = document.getElementById('expansionRegion').value;
+            if (!region) return;
+
+            const expansionData = {
+                usa: {
+                    title: '🇺🇸 USA & Canada',
+                    markets: [
+                        {
+                            country: 'United States',
+                            price: '$199',
+                            currency: 'USD',
+                            xofEquiv: '~13M XOF',
+                            platforms: ['Gumroad', 'Teachable', 'Kajabi'],
+                            payments: [
+                                { name: 'Stripe', fee: '2.9% + $0.30', trust: '⭐⭐⭐⭐⭐' },
+                                { name: 'PayPal', fee: '2.9% + $0.30', trust: '⭐⭐⭐⭐⭐' },
+                                { name: '2Checkout', fee: '3.5%', trust: '⭐⭐⭐⭐' }
+                            ],
+                            marketing: 'Facebook Ads, YouTube, TikTok (EN)',
+                            timing: 'Tuesday 10am EST',
+                            angle: 'African Digital Products for Americans'
+                        },
+                        {
+                            country: 'Canada',
+                            price: '$199 CAD',
+                            currency: 'CAD',
+                            xofEquiv: '~10M XOF',
+                            platforms: ['Gumroad', 'Teachable'],
+                            payments: [
+                                { name: 'Stripe', fee: '2.9% + $0.30', trust: '⭐⭐⭐⭐⭐' },
+                                { name: 'Wise', fee: '0.41%', trust: '⭐⭐⭐⭐' }
+                            ],
+                            marketing: 'LinkedIn, Facebook (EN/FR)',
+                            timing: 'Wednesday 2pm EST',
+                            angle: 'Uniquely African Perspective'
+                        }
+                    ]
+                },
+                europe: {
+                    title: '🇪🇺 Europe',
+                    markets: [
+                        {
+                            country: 'France',
+                            price: '€149',
+                            currency: 'EUR',
+                            xofEquiv: '~10M XOF',
+                            platforms: ['Podia', 'Kajabi', 'Teachable'],
+                            payments: [
+                                { name: 'Stripe', fee: '2.9% + €0.35', trust: '⭐⭐⭐⭐⭐' },
+                                { name: '2Checkout', fee: '3.5%', trust: '⭐⭐⭐⭐' },
+                                { name: 'Wise', fee: '0.41%', trust: '⭐⭐⭐⭐' }
+                            ],
+                            marketing: 'LinkedIn, YouTube (FR), Facebook',
+                            timing: 'Thursday 2pm CET',
+                            angle: 'Francophone African Success Stories'
+                        },
+                        {
+                            country: 'UK',
+                            price: '£129',
+                            currency: 'GBP',
+                            xofEquiv: '~11M XOF',
+                            platforms: ['Podia', 'Teachable'],
+                            payments: [
+                                { name: 'Stripe', fee: '2.9% + £0.20', trust: '⭐⭐⭐⭐⭐' },
+                                { name: 'PayPal', fee: '3.4%', trust: '⭐⭐⭐⭐⭐' }
+                            ],
+                            marketing: 'LinkedIn, YouTube, Twitter',
+                            timing: 'Friday 11am GMT',
+                            angle: 'African Entrepreneurs Teaching Brits'
+                        },
+                        {
+                            country: 'Germany',
+                            price: '€149',
+                            currency: 'EUR',
+                            xofEquiv: '~10M XOF',
+                            platforms: ['Podia', 'Teachable'],
+                            payments: [
+                                { name: 'Stripe', fee: '2.9% + €0.35', trust: '⭐⭐⭐⭐⭐' },
+                                { name: '2Checkout', fee: '3.5%', trust: '⭐⭐⭐⭐' }
+                            ],
+                            marketing: 'LinkedIn, YouTube (DE), Facebook',
+                            timing: 'Thursday 3pm CET',
+                            angle: 'Quality Products from Africa'
+                        }
+                    ]
+                },
+                asia: {
+                    title: '🇦🇸 Asie & Pacifique',
+                    markets: [
+                        {
+                            country: 'India',
+                            price: '₹15,999',
+                            currency: 'INR',
+                            xofEquiv: '~8M XOF',
+                            platforms: ['Udemy', 'Skillshare', 'Teachable'],
+                            payments: [
+                                { name: 'Razorpay', fee: '2%', trust: '⭐⭐⭐⭐⭐' },
+                                { name: 'UPI/PayTM', fee: '1-2%', trust: '⭐⭐⭐⭐⭐' },
+                                { name: '2Checkout', fee: '3.5%', trust: '⭐⭐⭐' }
+                            ],
+                            marketing: 'YouTube, TikTok, Instagram (EN)',
+                            timing: 'Sunday 7pm IST',
+                            angle: 'African Digital Methods for Indians'
+                        },
+                        {
+                            country: 'Philippines',
+                            price: '₱9,999',
+                            currency: 'PHP',
+                            xofEquiv: '~9M XOF',
+                            platforms: ['Teachable', 'Gumroad'],
+                            payments: [
+                                { name: 'GCash / PayMaya', fee: '2.5%', trust: '⭐⭐⭐⭐⭐' },
+                                { name: '2Checkout', fee: '3.5%', trust: '⭐⭐⭐' }
+                            ],
+                            marketing: 'Facebook, TikTok (EN/Tagalog)',
+                            timing: 'Monday 8pm PHT',
+                            angle: 'Proven Systems from Africa'
+                        }
+                    ]
+                },
+                mena: {
+                    title: '🇸🇦 Monde Arabe & MENA',
+                    markets: [
+                        {
+                            country: 'Saudi Arabia',
+                            price: '4,500 SAR',
+                            currency: 'SAR',
+                            xofEquiv: '~30M XOF',
+                            platforms: ['Etreq', 'Teachable'],
+                            payments: [
+                                { name: 'Telr', fee: '2.99%', trust: '⭐⭐⭐⭐⭐' },
+                                { name: '2Checkout', fee: '3.5%', trust: '⭐⭐⭐⭐' },
+                                { name: 'Apple Pay / Google Pay', fee: '2-3%', trust: '⭐⭐⭐⭐⭐' }
+                            ],
+                            marketing: 'TikTok (AR), Snapchat, YouTube (AR)',
+                            timing: 'Sunday 11pm GST',
+                            angle: 'Halal Islamic Finance Methods'
+                        },
+                        {
+                            country: 'UAE',
+                            price: '3,999 AED',
+                            currency: 'AED',
+                            xofEquiv: '~25M XOF',
+                            platforms: ['Etreq', 'Teachable'],
+                            payments: [
+                                { name: 'Telr', fee: '2.99%', trust: '⭐⭐⭐⭐⭐' },
+                                { name: 'Apple Pay', fee: '1.5%', trust: '⭐⭐⭐⭐⭐' },
+                                { name: 'Stripe', fee: '3.5%', trust: '⭐⭐⭐⭐' }
+                            ],
+                            marketing: 'Instagram, TikTok (AR), LinkedIn',
+                            timing: 'Sunday 10pm GST',
+                            angle: 'African Expertise for Gulf Market'
+                        }
+                    ]
+                },
+                latam: {
+                    title: '🇧🇷 Amérique Latine',
+                    markets: [
+                        {
+                            country: 'Brazil',
+                            price: 'R$ 799',
+                            currency: 'BRL',
+                            xofEquiv: '~12M XOF',
+                            platforms: ['Hotmart', 'Teachable'],
+                            payments: [
+                                { name: 'Hotmart', fee: '27.5% (com affiliation)', trust: '⭐⭐⭐⭐⭐' },
+                                { name: 'PagSeguro', fee: '4.99% + R$0.40', trust: '⭐⭐⭐⭐⭐' },
+                                { name: 'Mercado Pago', fee: '3.99%', trust: '⭐⭐⭐⭐⭐' }
+                            ],
+                            marketing: 'YouTube, TikTok, Instagram (PT)',
+                            timing: 'Tuesday 6pm BRT',
+                            angle: 'African Strategies for Latin America'
+                        }
+                    ]
+                },
+                africa: {
+                    title: '🌍 Autre Afrique',
+                    markets: [
+                        {
+                            country: 'Kenya',
+                            price: '4,999 KES',
+                            currency: 'KES',
+                            xofEquiv: '~8M XOF',
+                            platforms: ['Teachable', 'Gumroad'],
+                            payments: [
+                                { name: 'M-Pesa', fee: '1%', trust: '⭐⭐⭐⭐⭐' },
+                                { name: 'Pesapal', fee: '2.5%', trust: '⭐⭐⭐⭐⭐' },
+                                { name: 'Flutterwave', fee: '1.9%', trust: '⭐⭐⭐⭐⭐' }
+                            ],
+                            marketing: 'WhatsApp, Facebook, TikTok',
+                            timing: 'Thursday 5pm EAT',
+                            angle: 'Made in Africa for Africa'
+                        },
+                        {
+                            country: 'South Africa',
+                            price: 'R 2,999',
+                            currency: 'ZAR',
+                            xofEquiv: '~9M XOF',
+                            platforms: ['Teachable', 'Podia'],
+                            payments: [
+                                { name: 'Payfast', fee: '3.65% + ZAR 5', trust: '⭐⭐⭐⭐⭐' },
+                                { name: 'Stripe', fee: '2.9% + ZAR 2', trust: '⭐⭐⭐⭐' },
+                                { name: 'Flutterwave', fee: '1.9%', trust: '⭐⭐⭐⭐⭐' }
+                            ],
+                            marketing: 'Facebook, Instagram, YouTube',
+                            timing: 'Wednesday 3pm SAST',
+                            angle: 'Pan-African Success Stories'
+                        }
+                    ]
+                }
+            };
+
+            const data = expansionData[region];
+            if (!data) return;
+
+            let html = `<div class="card"><div class="card-title">${data.title}</div>`;
+
+            data.markets.forEach(market => {
+                html += `
+                    <div class="region-card">
+                        <div class="region-card-title">🌍 ${market.country}</div>
+                        
+                        <div class="stat">
+                            <span class="stat-label">💰 Prix Recommandé</span>
+                            <span class="stat-value">${market.price}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">📊 Équivalent XOF</span>
+                            <span class="stat-value">${market.xofEquiv}</span>
+                        </div>
+
+                        <div style="margin-top: 15px; margin-bottom: 15px;">
+                            <div style="color: var(--text-dark); font-weight: 600; margin-bottom: 10px;">💳 Moyens de Paiement Recommandés:</div>
+                            ${market.payments.map(p => `
+                                <div class="payment-method">
+                                    <div class="payment-method-name">${p.name}</div>
+                                    <div class="payment-method-details">Commission: ${p.fee} | Confiance: ${p.trust}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="stat">
+                            <span class="stat-label">📱 Plateformes</span>
+                            <span class="stat-value">${market.platforms.join(', ')}</span>
+                        </div>
+
+                        <div class="stat">
+                            <span class="stat-label">📢 Marketing</span>
+                            <span class="stat-value">${market.marketing}</span>
+                        </div>
+
+                        <div class="stat">
+                            <span class="stat-label">⏰ Timing Optimal</span>
+                            <span class="stat-value">${market.timing}</span>
+                        </div>
+
+                        <div class="stat">
+                            <span class="stat-label">🎯 Angle Unique</span>
+                            <span class="stat-value">${market.angle}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            const resultDiv = document.getElementById('expansionResult');
+            document.getElementById('expansionContent').innerHTML = html;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // ===== INIT =====
+        window.addEventListener('load', () => {
+            detectLanguage();
+            loadWinningProducts();
+            loadTrends();
+        });
+    </script>
+</body>
+</html>
